@@ -1,8 +1,31 @@
 <?php
 header('Content-Type: application/json');
-$endpoint = $_GET['endpoint'] ?? '';
+
+// Obtener parámetros
+$endpoint = isset($_GET['endpoint']) ? $_GET['endpoint'] : '';
 $id_cuenta = isset($_GET['id_cuenta']) ? (int)$_GET['id_cuenta'] : null;
-$db = new PDO('mysql:host=localhost;dbname=alertia;charset=utf8mb4', 'root', '');
+
+// Conexión PDO (ajusta las credenciales si estás en producción)
+$host = '192.1.0.239';
+$db   = 'alertia';
+$user = 'alertia';
+$pass = 'Casita123';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Lanza excepciones en errores
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Retorna arrays asociativos por defecto
+    PDO::ATTR_EMULATE_PREPARES   => false,                  // Usa prepared statements nativos si es posible
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+    // echo 'Conectado con éxito a MySQL';
+} catch (PDOException $e) {
+    die('❌ Error de conexión con MySQL: ' . $e->getMessage());
+}
 
 function dias_esp() {
     return ['Sun'=>'Dom', 'Mon'=>'Lun', 'Tue'=>'Mar', 'Wed'=>'Mié', 'Thu'=>'Jue', 'Fri'=>'Vie', 'Sat'=>'Sáb'];
