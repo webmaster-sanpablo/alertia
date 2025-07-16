@@ -231,6 +231,7 @@
             ORDER BY created_at DESC
             LIMIT 5
         ");
+        console.log("consulta" . $stmt);
         $stmt->execute([$id_cuenta]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -1015,52 +1016,52 @@
             const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
 
             function renderMultiMetricChart(canvasId, data) {
-            const labels = data.map(d => d.label);
-            const metrics = ['clicks', 'impressions', 'reach', 'spend', 'ctr', 'cpc', 'cpm', 'cost_per_result'];
+                const labels = data.map(d => d.label);
+                const metrics = ['clicks', 'impressions', 'reach', 'spend', 'ctr', 'cpc', 'cpm', 'cost_per_result'];
 
-            const datasets = metrics.map((metric, index) => {
-                const r = (index + 1) * 40 % 255;
-                const g = (index + 2) * 60 % 255;
-                const b = (index + 3) * 80 % 255;
-                return {
-                label: metric.toUpperCase(),
-                data: data.map(d => parseFloat(d[metric]) || 0),
-                backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,  // relleno transparente
-                borderColor: `rgba(${r}, ${g}, ${b}, 1)`,        // borde sólido
-                borderWidth: 1,
-                barThickness: 12                                // ← fuerza separación y grosor
-                };
-            });
+                const datasets = metrics.map((metric, index) => {
+                    const r = (index + 1) * 40 % 255;
+                    const g = (index + 2) * 60 % 255;
+                    const b = (index + 3) * 80 % 255;
+                    return {
+                    label: metric.toUpperCase(),
+                    data: data.map(d => parseFloat(d[metric]) || 0),
+                    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,  // relleno transparente
+                    borderColor: `rgba(${r}, ${g}, ${b}, 1)`,        // borde sólido
+                    borderWidth: 1,
+                    barThickness: 12                                // ← fuerza separación y grosor
+                    };
+                });
 
-            new Chart(document.getElementById(canvasId).getContext('2d'), {
-                type: 'bar',
-                data: {
-                labels: labels,
-                datasets: datasets
-                },
-                options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' },
-                    title: { display: false }
-                },
-                scales: {
-                    x: {
-                    stacked: false,
-                    ticks: {
-                        autoSkip: false,
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
+                new Chart(document.getElementById(canvasId).getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                    labels: labels,
+                    datasets: datasets
                     },
-                    y: {
-                    beginAtZero: true,
-                    stacked: false
+                    options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: false }
+                    },
+                    scales: {
+                        x: {
+                        stacked: false,
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                        },
+                        y: {
+                        beginAtZero: true,
+                        stacked: false
+                        }
                     }
-                }
-                }
-            });
+                    }
+                });
             }
 
             renderMultiMetricChart('adsChartFull', adsFull);
