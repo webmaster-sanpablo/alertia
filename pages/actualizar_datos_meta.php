@@ -193,29 +193,27 @@ try {
 
             // Ads Insights
             if ($adsAccountId !== '-') {
-                if (isset(['ad', 'adset', 'campaign']) && is_array(['ad', 'adset', 'campaign'])) {
-                    foreach (['ad', 'adset', 'campaign'] as $level) {
-                        $url = "https://graph.facebook.com/$apiVersion/$adsAccountId/insights?level=$level&fields={$level}_id,{$level}_name,impressions,reach,clicks,spend,cpc,cpm,ctr,cost_per_result,date_start&date_preset=yesterday&access_token=$accessToken";
-                        $insights = apiGet($url);
-                        $table = $level . 's_insights_fb';
-                        $id_field = $level . '_id';
-                        $name_field = $level . '_name';
+                foreach (['ad', 'adset', 'campaign'] as $level) {
+                    $url = "https://graph.facebook.com/$apiVersion/$adsAccountId/insights?level=$level&fields={$level}_id,{$level}_name,impressions,reach,clicks,spend,cpc,cpm,ctr,cost_per_result,date_start&date_preset=yesterday&access_token=$accessToken";
+                    $insights = apiGet($url);
+                    $table = $level . 's_insights_fb';
+                    $id_field = $level . '_id';
+                    $name_field = $level . '_name';
 
-                        if (isset($insights['data']) && is_array($insights['data'])) {
-                            foreach ($insights['data'] as $row) {
-                                $stmt = $pdo->prepare("SELECT 1 FROM $table WHERE $id_field = ? AND date_start = ? AND id_cuenta = ?");
-                                $stmt->execute([$row[$id_field], $row['date_start'], $id_cuenta]);
-                                if ($stmt->fetch()) continue;
+                    if (isset($insights['data']) && is_array($insights['data'])) {
+                        foreach ($insights['data'] as $row) {
+                            $stmt = $pdo->prepare("SELECT 1 FROM $table WHERE $id_field = ? AND date_start = ? AND id_cuenta = ?");
+                            $stmt->execute([$row[$id_field], $row['date_start'], $id_cuenta]);
+                            if ($stmt->fetch()) continue;
 
-                                $stmt = $pdo->prepare("INSERT INTO $table ($id_field, $name_field, impressions, reach, clicks, spend, cpc, cpm, ctr, cost_per_result, date_start, created_at, updated_at, id_cuenta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)");
-                                $stmt->execute([
-                                    $row[$id_field], $row[$name_field] ?? '', $row['impressions'] ?? 0,
-                                    $row['reach'] ?? 0, $row['clicks'] ?? 0, $row['spend'] ?? 0,
-                                    $row['cpc'] ?? 0, $row['cpm'] ?? 0, $row['ctr'] ?? 0,
-                                    extractCost($row), $row['date_start'], $id_cuenta
-                                ]);
-                                logMsg("✅ Insertado $level: {$row[$id_field]}");
-                            }
+                            $stmt = $pdo->prepare("INSERT INTO $table ($id_field, $name_field, impressions, reach, clicks, spend, cpc, cpm, ctr, cost_per_result, date_start, created_at, updated_at, id_cuenta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)");
+                            $stmt->execute([
+                                $row[$id_field], $row[$name_field] ?? '', $row['impressions'] ?? 0,
+                                $row['reach'] ?? 0, $row['clicks'] ?? 0, $row['spend'] ?? 0,
+                                $row['cpc'] ?? 0, $row['cpm'] ?? 0, $row['ctr'] ?? 0,
+                                extractCost($row), $row['date_start'], $id_cuenta
+                            ]);
+                            logMsg("✅ Insertado $level: {$row[$id_field]}");
                         }
                     }
                 }
