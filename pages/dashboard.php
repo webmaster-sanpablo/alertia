@@ -1123,7 +1123,6 @@
                 // Mostrar ícono de carga
                 button.disabled = true;
                 const originalText = button.innerHTML;
-                button.innerHTML = '⏳ Sincronizando...';
                 logDiv.innerHTML = '⌛ Ejecutando...';
 
                 fetch('actualizar_datos_meta.php?token=mi_token_secreto123')
@@ -1144,7 +1143,6 @@
                     })
                     .finally(() => {
                         button.disabled = false;
-                        button.innerHTML = originalText;
                     });
             });
         </script>
