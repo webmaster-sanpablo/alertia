@@ -1,7 +1,7 @@
 <?php
 $servername = '192.1.0.239';
 $username = 'alertia';
-$password = 'Casita123.';
+$password = 'Casita123';
 $dbname = 'alertia';
 
 // Crear la conexión
