@@ -227,7 +227,7 @@
         $stmt = $pdo->prepare("
             SELECT $nameField AS label, clicks, impressions, reach, spend, ctr, cpc, cpm, cost_per_result
             FROM $table
-            WHERE id_cuenta = $id_cuenta
+            WHERE id_cuenta = ?
             ORDER BY created_at DESC
             LIMIT 5
         ");
@@ -315,6 +315,14 @@
                 border-radius: 12px;
             }
         </style>
+        <script>
+            const adsFull = <?php echo json_encode($adsFull); ?>;
+            const adsetsFull = <?php echo json_encode($adsetsFull); ?>;
+            const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
+            console.log("adsFull:", adsFull);
+            console.log("adsetsFull:", adsetsFull);
+            console.log("campaignsFull:", campaignsFull);
+        </script>
     </head>
     <body class="g-sidenav-show bg-gray-100">
         <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2" id="sidenav-main">
@@ -1013,9 +1021,6 @@
             const adsFull = <?php echo json_encode($adsFull); ?>;
             const adsetsFull = <?php echo json_encode($adsetsFull); ?>;
             const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
-            console.log("adsFull : " . adsFull);
-            console.log("adsetsFull : " . adsetsFull);
-            console.log("campaignsFull : " . campaignsFull);
 
             function renderMultiMetricChart(canvasId, data) {
                 const labels = data.map(d => d.label);
