@@ -319,9 +319,6 @@
             const adsFull = <?php echo json_encode($adsFull); ?>;
             const adsetsFull = <?php echo json_encode($adsetsFull); ?>;
             const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
-            console.log("adsFull:", adsFull);
-            console.log("adsetsFull:", adsetsFull);
-            console.log("campaignsFull:", campaignsFull);
         </script>
     </head>
     <body class="g-sidenav-show bg-gray-100">
