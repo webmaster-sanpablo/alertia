@@ -1131,7 +1131,7 @@
                         if (data.error) {
                             logDiv.innerHTML = `<span style="color:red">🚫 ${data.error}</span>`;
                         } else if (Array.isArray(data.resultados)) {
-                            logDiv.innerHTML = '<b>✅ Resultado:</b><br>' + data.resultados.map(line => `• ${line}`).join('<br>');
+                            // logDiv.innerHTML = '<b>✅ Resultado:</b><br>' + data.resultados.map(line => `• ${line}`).join('<br>');
                         } else {
                             logDiv.innerHTML = `<span style="color:red">⚠️ Respuesta inesperada del servidor</span>`;
                             console.error('Respuesta inesperada:', data);
