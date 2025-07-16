@@ -1,11 +1,12 @@
-<?php
-$host = 'localhost';
-$db   = 'alertia';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
+<?php 
+$host = '192.1.0.239';
+$port = '1521'; // Puerto por defecto de Oracle
+$service = 'alertia'; // Puede ser el SID o SERVICE_NAME según configuración
+$user = 'alertia';
+$pass = 'Casita123';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "oci:dbname=//$host:$port/$service;charset=AL32UTF8";
+
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -14,7 +15,7 @@ $options = [
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+} catch (PDOException $e) {
+    die("Error al conectar con Oracle: " . $e->getMessage());
 }
 ?>
