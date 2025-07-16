@@ -99,7 +99,9 @@ try {
             $fbValues = array_fill_keys($metricsFb, 0);
             foreach ($fbInsights['data'] as $item) {
                 if (isset($item['name'], $item['values'][0]['value'])) {
-                    $fbValues[$item['name']] = is_array($item['values'][0]['value']) ? json_encode($item['values'][0]['value']) : $item['values'][0]['value'];
+                    $fbValues[$item['name']] = is_array($item['values'][0]['value']) && isset($item['values'][0]['value']['like'])
+                        ? $item['values'][0]['value']['like']
+                        : (is_numeric($item['values'][0]['value']) ? $item['values'][0]['value'] : 0);
                 }
             }
             insertOrUpdate($pdo, 'insights_fb', array_keys($fbValues), array_values($fbValues), 'created_at', $id_cuenta);
