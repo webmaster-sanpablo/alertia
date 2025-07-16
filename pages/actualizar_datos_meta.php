@@ -33,38 +33,33 @@ function apiGet($url) {
 }
 
 function upsertUnique($pdo, $table, $keyFields, $data) {
-    $where = implode(' AND ', array_map(function($f) {
-        return "$f = ?";
-    }, $keyFields));
-    $check = $pdo->prepare("SELECT 1 FROM $table WHERE $where");
-    $check->execute(array_map(function($f) use ($data) {
-        return $data[$f];
-    }, $keyFields));
-
     $columns = array_keys($data);
     $values = array_values($data);
 
+    $quotedCols = array_map(function($c) { return "`$c`"; }, $columns);
+    $quotedKeys = array_map(function($k) { return "`$k` = ?"; }, $keyFields);
+    $where = implode(' AND ', $quotedKeys);
+
+    $check = $pdo->prepare("SELECT 1 FROM `$table` WHERE $where");
+    $check->execute(array_map(function($f) use ($data) { return $data[$f]; }, $keyFields));
+
     if ($check->fetch()) {
-        $set = implode(', ', array_map(function($c) {
-            return "$c = ?";
-        }, $columns));
-        $update = $pdo->prepare("UPDATE $table SET $set WHERE $where");
-        $update->execute(array_merge($values, array_map(function($f) use ($data) {
-            return $data[$f];
-        }, $keyFields)));
+        $set = implode(', ', array_map(function($c) { return "`$c` = ?"; }, $columns));
+        $update = $pdo->prepare("UPDATE `$table` SET $set WHERE $where");
+        $update->execute(array_merge($values, array_map(function($f) use ($data) { return $data[$f]; }, $keyFields)));
         logMsg("🔄 Actualizado $table");
     } else {
-        $cols = implode(', ', $columns);
+        $cols = implode(', ', $quotedCols);
         $marks = implode(', ', array_fill(0, count($columns), '?'));
-        $insert = $pdo->prepare("INSERT INTO $table ($cols) VALUES ($marks)");
+        $insert = $pdo->prepare("INSERT INTO `$table` ($cols) VALUES ($marks)");
         $insert->execute($values);
         logMsg("✅ Insertado en $table");
     }
 }
 
 function extractCost($entry) {
-    if (!empty($entry['cost_per_result'][0]['values'][0]['value'])) {
-        return floatval($entry['cost_per_result'][0]['values'][0]['value']);
+    if (isset($entry['cost_per_result'][0]['values'][0]['value'])) {
+        return $entry['cost_per_result'][0]['values'][0]['value'];
     }
     return 0;
 }
@@ -82,6 +77,7 @@ try {
         if ($accessToken === '-' || empty($accessToken)) continue;
         logMsg("🟡 Procesando cuenta $id_cuenta");
 
+        // Seguidores FB
         if ($fbPageId !== '-') {
             $fb = apiGet("https://graph.facebook.com/$apiVersion/$fbPageId?fields=name,followers_count&access_token=$accessToken");
             upsertUnique($pdo, 'seguidores_fb', ['id_seguidores_fb', 'id_cuenta'], [
@@ -92,44 +88,23 @@ try {
                 'id_cuenta' => $id_cuenta
             ]);
 
-            $metrics = [
-                'page_impressions',
-                'page_fans',
-                'page_post_engagements',
-                'page_video_views_paid',
-                'page_video_views_organic',
-                'page_actions_post_reactions_total'
-            ];
+            // Insights FB
+            $metrics = ['page_impressions', 'page_fans', 'page_post_engagements', 'page_video_views_paid', 'page_video_views_organic', 'page_actions_post_reactions_total'];
             $insights = apiGet("https://graph.facebook.com/$apiVersion/$fbPageId/insights?metric=" . implode(',', $metrics) . "&period=day&access_token=$accessToken");
-
-            $valores = [
-                'id_insights_fb' => date('Ymd'),
-                'id_cuenta' => $id_cuenta,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s'),
-                'page_impressions' => 0,
-                'page_fans' => 0,
-                'page_post_engagements' => 0,
-                'page_video_views_paid' => 0,
-                'page_video_views_organic' => 0,
-                'page_actions_post_reactions_total' => 0,
-            ];
-
-            foreach ($insights['data'] as $entry) {
-                $name = $entry['name'];
-                $lastValue = end($entry['values']);
-                if ($name === 'page_actions_post_reactions_total' && is_array($lastValue['value'])) {
-                    $sum = 0;
-                    foreach ($lastValue['value'] as $v) {
-                        $sum += intval($v);
-                    }
-                    $valores['page_actions_post_reactions_total'] = $sum;
-                } elseif (isset($valores[$name])) {
-                    $valores[$name] = is_array($lastValue['value']) ? 0 : intval($lastValue['value']);
+            $values = ['id_insights_fb' => date('Ymd'), 'id_cuenta' => $id_cuenta, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')];
+            foreach ($metrics as $m) {
+                $entry = array_filter($insights['data'] ?? [], function($d) use ($m) {
+                    return $d['name'] === $m;
+                });
+                $value = array_values($entry)[0]['values'][0]['value'] ?? 0;
+                if (is_array($value)) {
+                    $value = array_sum($value); // Suma todas las reacciones
                 }
+                $values[$m] = $value;
             }
-            upsertUnique($pdo, 'insights_fb', ['id_insights_fb', 'id_cuenta'], $valores);
+            upsertUnique($pdo, 'insights_fb', ['id_insights_fb', 'id_cuenta'], $values);
 
+            // Posts FB
             $posts = apiGet("https://graph.facebook.com/$apiVersion/$fbPageId/posts?fields=id,message,created_time,reactions.type(LIKE).limit(0).summary(true).as(like),reactions.type(LOVE).limit(0).summary(true).as(love),reactions.type(WOW).limit(0).summary(true).as(wow),reactions.type(HAHA).limit(0).summary(true).as(haha),reactions.type(ANGRY).limit(0).summary(true).as(anger),reactions.type(SAD).limit(0).summary(true).as(sorry),comments.limit(0).summary(true),shares&limit=10&access_token=$accessToken");
             foreach ($posts['data'] ?? [] as $post) {
                 upsertUnique($pdo, 'post_fb', ['id', 'id_cuenta'], [
@@ -151,6 +126,7 @@ try {
             }
         }
 
+        // Instagram
         if ($igUserId !== '-' && is_numeric($igUserId)) {
             $ig = apiGet("https://graph.facebook.com/$apiVersion/$igUserId?fields=username,followers_count,media_count&access_token=$accessToken");
             upsertUnique($pdo, 'seguidores_ig', ['id_seguidores_ig', 'id_cuenta'], [
@@ -164,30 +140,25 @@ try {
 
             $metrics = ['reach', 'profile_views', 'views', 'likes', 'comments', 'shares', 'saves'];
             $insights = apiGet("https://graph.facebook.com/$apiVersion/$igUserId/insights?metric=" . implode(',', $metrics) . "&metric_type=total_value&period=day&access_token=$accessToken");
-
-            $valores = [
-                'id_insights_ig' => date('Ymd'),
-                'id_cuenta' => $id_cuenta,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
-            ];
+            $values = ['id_insights_ig' => date('Ymd'), 'id_cuenta' => $id_cuenta, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')];
             foreach ($metrics as $m) {
-                $entry = array_filter($insights['data'], function($d) use ($m) {
+                $entry = array_filter($insights['data'] ?? [], function($d) use ($m) {
                     return $d['name'] === $m;
                 });
                 $val = array_values($entry)[0]['total_value']['value'] ?? 0;
-                $valores[$m] = $val;
+                $values[$m] = $val;
             }
-            upsertUnique($pdo, 'insights_ig', ['id_insights_ig', 'id_cuenta'], $valores);
+            upsertUnique($pdo, 'insights_ig', ['id_insights_ig', 'id_cuenta'], $values);
         }
 
+        // Ads (FB)
         if ($adsAccountId !== '-') {
             foreach (['ad', 'adset', 'campaign'] as $level) {
                 $insights = apiGet("https://graph.facebook.com/$apiVersion/$adsAccountId/insights?level=$level&fields={$level}_id,{$level}_name,impressions,reach,clicks,spend,cpc,cpm,ctr,cost_per_result,date_start,date_stop&date_preset=yesterday&access_token=$accessToken");
                 foreach ($insights['data'] ?? [] as $row) {
                     $row = array_merge([
                         "{$level}_id" => $row["{$level}_id"] ?? null,
-                        "{$level}_name" => $row["{$level}_name"] ?? null,
+                        "{$level}_name" => $row["{$level}_name"] ?? '',
                         'impressions' => $row['impressions'] ?? 0,
                         'reach' => $row['reach'] ?? 0,
                         'clicks' => $row['clicks'] ?? 0,
@@ -203,8 +174,8 @@ try {
                         'id_cuenta' => $id_cuenta
                     ]);
                     $table = "{$level}s_insights_fb";
-                    $rowId = "{$level}_id";
-                    upsertUnique($pdo, $table, [$rowId, 'id_cuenta', 'date_start'], $row);
+                    $keyFields = [$level . '_id', 'id_cuenta', 'date_start'];
+                    upsertUnique($pdo, $table, $keyFields, $row);
                 }
             }
         }
