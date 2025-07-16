@@ -402,12 +402,13 @@
                             <li class="nav-item d-flex align-items-center">
                                 <h6 class="text-dark text-sm my-0 me-3 border-0"><?php echo htmlspecialchars($nombre_cuenta); ?></h6>
                             </li>
-                            
+                            <?php if (isset($_SESSION['nivel_usuario']) && $_SESSION['nivel_usuario'] == 3): ?>
                             <li class="nav-item px-3 d-flex align-items-center">
                                 <button id="sync-button" class="d-flex align-items-center nav-link text-body p-0">
                                     <i class="material-symbols-rounded fixed-plugin-button-nav">autorenew</i>
                                 </button>
                             </li>
+                            <?php endif; ?>
                             <li class="nav-item dropdown pe-3 d-flex align-items-center">
                                 <a href="javascript:;" class="d-flex align-items-center nav-link text-body p-0" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="material-symbols-rounded">notifications</i>
@@ -987,27 +988,30 @@
                 }
             });
 
-            document.getElementById('sync-button').addEventListener('click', function () {
-                const btn = this;
-                btn.disabled = true;
-                btn.textContent = 'Sincronizando...';
+            const syncButton = document.getElementById('sync-button');
+            if (syncButton) {
+                syncButton.addEventListener('click', function () {
+                    const btn = this;
+                    btn.disabled = true;
+                    btn.textContent = 'Sincronizando...';
 
-                fetch('sync_meta_data.php')
-                    .then(response => {
-                        if (!response.ok) throw new Error('Error al sincronizar');
-                        return response.text();
-                    })
-                    .then(data => {
-                        console.log('✅ Sincronización completada:', data);
-                        location.reload(); // Recarga la página para mostrar datos nuevos
-                    })
-                    .catch(error => {
-                        console.error('❌ Error:', error);
-                        alert('Error al sincronizar los datos');
-                        btn.disabled = false;
-                        btn.textContent = '🔄 Sincronizar Datos Meta';
-                    });
-            });
+                    fetch('sync_meta_data.php')
+                        .then(response => {
+                            if (!response.ok) throw new Error('Error al sincronizar');
+                            return response.text();
+                        })
+                        .then(data => {
+                            console.log('✅ Sincronización completada:', data);
+                            location.reload(); // Recarga la página para mostrar datos nuevos
+                        })
+                        .catch(error => {
+                            console.error('❌ Error:', error);
+                            alert('Error al sincronizar los datos');
+                            btn.disabled = false;
+                            btn.textContent = '🔄 Sincronizar Datos Meta';
+                        });
+                });
+            }
             
             const adsFull = <?php echo json_encode($adsFull); ?>;
             const adsetsFull = <?php echo json_encode($adsetsFull); ?>;
