@@ -1013,6 +1013,9 @@
             const adsFull = <?php echo json_encode($adsFull); ?>;
             const adsetsFull = <?php echo json_encode($adsetsFull); ?>;
             const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
+            console.log("adsFull : " . adsFull);
+            console.log("adsetsFull : " . adsetsFull);
+            console.log("campaignsFull : " . campaignsFull);
 
             function renderMultiMetricChart(canvasId, data) {
                 const labels = data.map(d => d.label);
@@ -1062,9 +1065,6 @@
                     }
                 });
             }
-            console.log("adsFull : " . adsFull);
-            console.log("adsetsFull : " . adsetsFull);
-            console.log("campaignsFull : " . campaignsFull);
 
             renderMultiMetricChart('adsChartFull', adsFull);
             renderMultiMetricChart('adsetsChartFull', adsetsFull);
