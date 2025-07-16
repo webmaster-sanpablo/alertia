@@ -185,6 +185,7 @@
                                 <button id="sync-button" class="d-flex align-items-center nav-link text-body p-0">
                                     <i class="material-symbols-rounded fixed-plugin-button-nav">autorenew</i>
                                 </button>
+                                <div id="log"></div>
                             </li>
                             <?php endif; ?>
                             <li class="nav-item dropdown pe-3 d-flex align-items-center">
@@ -1113,6 +1114,24 @@
                         }
                     });
                 });
+            });
+
+            document.getElementById('sync-button').addEventListener('click', () => {
+                const logDiv = document.getElementById('log');
+                logDiv.innerHTML = '⌛ Ejecutando...';
+
+                fetch('actualizar_datos.php?token=mi_token_secreto123')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            logDiv.innerHTML = `<span style="color:red">${data.error}</span>`;
+                        } else {
+                            logDiv.innerHTML = '<b>✅ Resultado:</b><br>' + data.log.map(line => `• ${line}`).join('<br>');
+                        }
+                    })
+                    .catch(err => {
+                        logDiv.innerHTML = `<span style="color:red">❌ Error: ${err.message}</span>`;
+                    });
             });
         </script>
         <!-- Github buttons -->

@@ -1,15 +1,23 @@
 <?php
-set_time_limit(300); // 5 minutos
+header('Content-Type: application/json');
+set_time_limit(300);
 require_once 'db_connection.php';
 
 // Protección con token simple
 $tokenEsperado = 'mi_token_secreto123';
-if (php_sapi_name() !== 'cli' && (!isset($_GET['token']) || $_GET['token'] !== $tokenEsperado)) {
+if (!isset($_GET['token']) || $_GET['token'] !== $tokenEsperado) {
     http_response_code(403);
-    exit('🚫 Acceso denegado');
+    echo json_encode(['error' => '🚫 Acceso denegado']);
+    exit;
 }
 
 $apiVersion = 'v18.0';
+$resultados = [];
+
+function logMsg($msg) {
+    global $resultados;
+    $resultados[] = $msg;
+}
 
 function apiGet($url) {
     $ch = curl_init($url);
@@ -44,9 +52,9 @@ function insertOrUpdate($pdo, $table, $columns, $values, $dateField, $id_cuenta)
             $sql = "UPDATE $table SET $set WHERE DATE($dateField) = ? AND id_cuenta = ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([...$values, $date, $id_cuenta]);
-            echo "🔄 Actualizado $table\n";
+            logMsg("🔄 Actualizado $table");
         } else {
-            echo "ℹ️ Sin cambios en $table\n";
+            logMsg("ℹ️ Sin cambios en $table");
         }
     } else {
         $cols = implode(', ', $columns) . ', created_at, updated_at, id_cuenta';
@@ -54,7 +62,7 @@ function insertOrUpdate($pdo, $table, $columns, $values, $dateField, $id_cuenta)
         $sql = "INSERT INTO $table ($cols) VALUES ($marks)";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([...$values, $id_cuenta]);
-        echo "✅ Insertado en $table\n";
+        logMsg("✅ Insertado en $table");
     }
 }
 
@@ -74,11 +82,11 @@ try {
         $accessToken = $cuenta['access_token'];
 
         if ($accessToken === '-' || empty($accessToken)) {
-            echo "⏩ Saltando cuenta $id_cuenta (sin token)\n";
+            logMsg("⏩ Saltando cuenta $id_cuenta (sin token)");
             continue;
         }
 
-        echo "🟡 Procesando cuenta $id_cuenta\n";
+        logMsg("🟡 Procesando cuenta $id_cuenta");
 
         if ($fbPageId !== '-') {
             $fbUrl = "https://graph.facebook.com/$apiVersion/$fbPageId?fields=name,followers_count&access_token=$accessToken";
@@ -131,7 +139,7 @@ try {
                         $idPost, $message, $createdTime, $likes, $loves, $wows, $hahas,
                         $angers, $sorries, $comments, $shares, $id_cuenta
                     ]);
-                    echo "✅ Insertado post: $idPost\n";
+                    logMsg("✅ Insertado post: $idPost");
                 } elseif (
                     $existing['like'] != $likes || $existing['love'] != $loves ||
                     $existing['wow'] != $wows || $existing['haha'] != $hahas ||
@@ -146,9 +154,9 @@ try {
                         $message, $likes, $loves, $wows, $hahas, $angers, $sorries,
                         $comments, $shares, $idPost, $id_cuenta
                     ]);
-                    echo "🔄 Actualizado post: $idPost\n";
+                    logMsg("🔄 Actualizado post: $idPost");
                 } else {
-                    echo "ℹ️ Post $idPost sin cambios\n";
+                    logMsg("ℹ️ Post $idPost sin cambios");
                 }
             }
         }
@@ -193,12 +201,12 @@ try {
                         $row['cpc'] ?? 0, $row['cpm'] ?? 0, $row['ctr'] ?? 0,
                         extractCost($row), $row['date_start'], $id_cuenta
                     ]);
-                    echo "✅ Insertado $level: {$row[$id_field]}\n";
+                    logMsg("✅ Insertado $level: {$row[$id_field]}");
                 }
             }
         }
     }
 
 } catch (Exception $e) {
-    echo "❌ Error: " . $e->getMessage();
+    logMsg("❌ Error: " . $e->getMessage());
 }
