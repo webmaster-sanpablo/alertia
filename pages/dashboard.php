@@ -1120,7 +1120,7 @@
                 const logDiv = document.getElementById('log');
                 logDiv.innerHTML = '⌛ Ejecutando...';
 
-                fetch('actualizar_datos.php?token=mi_token_secreto123')
+                fetch('actualizar_datos_meta.php?token=mi_token_secreto123')
                     .then(res => res.json())
                     .then(data => {
                         if (data.error) {
