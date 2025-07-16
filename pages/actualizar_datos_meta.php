@@ -45,7 +45,9 @@ function upsertUnique($pdo, $table, $keyFields, $data) {
     $values = array_values($data);
 
     if ($check->fetch()) {
-        $set = implode(', ', array_map(fn($c) => "$c = ?", $columns));
+        $set = implode(', ', array_map(function($c) {
+            return "$c = ?";
+        }, $columns));
         $update = $pdo->prepare("UPDATE $table SET $set WHERE $where");
         $update->execute(array_merge($values, array_map(fn($f) => $data[$f], $keyFields)));
         logMsg("🔄 Actualizado $table");
