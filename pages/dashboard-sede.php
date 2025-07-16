@@ -231,7 +231,7 @@
             ORDER BY created_at DESC
             LIMIT 5
         ");
-        console.log("consulta" . $stmt);
+        echo("consulta" . $stmt);
         $stmt->execute([$id_cuenta]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
