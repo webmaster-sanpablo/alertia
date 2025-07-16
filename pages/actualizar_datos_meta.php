@@ -35,11 +35,11 @@ function apiGet($url) {
 function upsertUnique($pdo, $table, $keyFields, $data) {
     $whereParts = array();
     foreach ($keyFields as $f) {
-        $whereParts[] = "$f = ?";
+        $whereParts[] = "`$f` = ?";
     }
     $where = implode(' AND ', $whereParts);
 
-    $check = $pdo->prepare("SELECT 1 FROM $table WHERE $where");
+    $check = $pdo->prepare("SELECT 1 FROM `$table` WHERE $where");
 
     $keyValues = array();
     foreach ($keyFields as $f) {
@@ -53,16 +53,16 @@ function upsertUnique($pdo, $table, $keyFields, $data) {
     if ($check->fetch()) {
         $setParts = array();
         foreach ($columns as $c) {
-            $setParts[] = "$c = ?";
+            $setParts[] = "`$c` = ?";
         }
         $set = implode(', ', $setParts);
-        $update = $pdo->prepare("UPDATE $table SET $set WHERE $where");
+        $update = $pdo->prepare("UPDATE `$table` SET $set WHERE $where");
         $update->execute(array_merge($values, $keyValues));
         logMsg("🔄 Actualizado $table");
     } else {
-        $cols = implode(', ', $columns);
+        $cols = implode(', ', array_map(function($c) { return "`$c`"; }, $columns));
         $marks = implode(', ', array_fill(0, count($columns), '?'));
-        $insert = $pdo->prepare("INSERT INTO $table ($cols) VALUES ($marks)");
+        $insert = $pdo->prepare("INSERT INTO `$table` ($cols) VALUES ($marks)");
         $insert->execute($values);
         logMsg("✅ Insertado en $table");
     }
