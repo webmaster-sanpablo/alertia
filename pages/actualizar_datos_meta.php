@@ -20,11 +20,11 @@ function logMsg($msg) {
 
 function apiGet($url) {
     $ch = curl_init($url);
-    curl_setopt_array($ch, [
+    curl_setopt_array($ch, array(
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => false,
-        CURLOPT_TIMEOUT => 30
-    ]);
+        CURLOPT_TIMEOUT => 30,
+    ));
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
