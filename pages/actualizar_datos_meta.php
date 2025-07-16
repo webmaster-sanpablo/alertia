@@ -210,3 +210,5 @@ try {
 } catch (Exception $e) {
     logMsg("❌ Error: " . $e->getMessage());
 }
+
+echo json_encode(['resultados' => $resultados]);
