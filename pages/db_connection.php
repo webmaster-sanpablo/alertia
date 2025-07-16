@@ -1,26 +1,20 @@
 <?php
-$host = '192.1.0.239'; // IP del servidor Oracle
-$port = 1521;           // Puerto estándar
-$service = 'alertia';   // Nombre del servicio (puede ser también SID, si aplica)
-$user = 'alertia';
-$pass = 'Casita123';
+$servername = '192.1.0.239';
+$username = 'alertia';
+$password = 'Casita123.';
+$dbname = 'alertia';
 
-// TNS descriptor
-$tns = "
-(DESCRIPTION =
-    (ADDRESS = (PROTOCOL = TCP)(HOST = $host)(PORT = $port))
-    (CONNECT_DATA =
-      (SERVICE_NAME = $service)
-    )
-)";
+// Crear la conexión
+$conn = mysqli_connect( $servername, $username, $password, $dbname );
 
-try {
-    $pdo = new PDO("oci:dbname=" . $tns, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-    // echo "✅ Conexión exitosa a Oracle.";
-} catch (PDOException $e) {
-    die("❌ Error al conectar con Oracle: " . $e->getMessage());
+// Verificar la conexión
+if ( !$conn ) {
+    die( 'Error de conexiÃ³n con MySQL: ' . mysqli_connect_error() );
+} else {
+    // Establecer el conjunto de caracteres para la conexiÃ³n
+    mysqli_set_charset( $conn, 'utf8mb4' );
+    // echo 'Conectado';
 }
 ?>
+
+
