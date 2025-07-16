@@ -105,7 +105,8 @@ try {
                 $entry = array_filter($insights['data'], function($d) use ($m) {
                     return $d['name'] === $m;
                 });
-                $val = isset(array_values($entry)[0]['values'][0]['value']) ? array_values($entry)[0]['values'][0]['value'] : 0;
+                $valRaw = isset(array_values($entry)[0]['values'][0]['value']) ? array_values($entry)[0]['values'][0]['value'] : 0;
+                $val = is_array($valRaw) ? array_sum($valRaw) : $valRaw;
                 $values[$m] = $val;
             }
 
@@ -160,7 +161,8 @@ try {
                 $entry = array_filter($insights['data'], function($d) use ($m) {
                     return $d['name'] === $m;
                 });
-                $val = isset(array_values($entry)[0]['total_value']['value']) ? array_values($entry)[0]['total_value']['value'] : 0;
+                $valRaw = isset(array_values($entry)[0]['total_value']['value']) ? array_values($entry)[0]['total_value']['value'] : 0;
+                $val = is_array($valRaw) ? array_sum($valRaw) : $valRaw;
                 $values[$m] = $val;
             }
 
