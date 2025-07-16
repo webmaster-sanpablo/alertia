@@ -243,7 +243,8 @@
                                         <label class="form-label text-xs text-bold">Nivel de Usuario:</label>
                                         <select class="form-select px-2" name="id_nivel_usuario" required>
                                             <option value="1">Community Manager</option>
-                                            <option value="2">Administrador</option>
+                                            <option value="2">CM Corporativo</option>
+                                            <option value="3">Super Usuario</option>
                                         </select>
                                     </div>
                                 </div>
@@ -309,7 +310,8 @@
                                         <label class="form-label text-xs text-bold">Nivel de Usuario:</label>
                                         <select class="form-select px-2" name="id_nivel_usuario" required>
                                             <option value="1">Community Manager</option>
-                                            <option value="2">Administrador</option>
+                                            <option value="2">CM Corporativo</option>
+                                            <option value="3">Súper Usuario</option>
                                         </select>
                                     </div>
                                 </div>
