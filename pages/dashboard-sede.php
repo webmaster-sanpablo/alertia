@@ -231,7 +231,13 @@
             ORDER BY created_at DESC
             LIMIT 5
         ");
-        echo("consulta" . $stmt);
+        echo("consulta : " . "
+            SELECT $nameField AS label, clicks, impressions, reach, spend, ctr, cpc, cpm, cost_per_result
+            FROM $table
+            WHERE id_cuenta = ?
+            ORDER BY created_at DESC
+            LIMIT 5
+        ");
         $stmt->execute([$id_cuenta]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
