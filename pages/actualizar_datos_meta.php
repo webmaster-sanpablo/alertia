@@ -33,7 +33,9 @@ function apiGet($url) {
 }
 
 function upsertUnique($pdo, $table, $keyFields, $data) {
-    $where = implode(' AND ', array_map(fn($f) => "$f = ?", $keyFields));
+    $where = implode(' AND ', array_map(function($f) {
+        return "$f = ?";
+    }, $keyFields));
     $check = $pdo->prepare("SELECT 1 FROM $table WHERE $where");
     $check->execute(array_map(fn($f) => $data[$f], $keyFields));
 
