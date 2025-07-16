@@ -37,7 +37,9 @@ function upsertUnique($pdo, $table, $keyFields, $data) {
         return "$f = ?";
     }, $keyFields));
     $check = $pdo->prepare("SELECT 1 FROM $table WHERE $where");
-    $check->execute(array_map(fn($f) => $data[$f], $keyFields));
+    $check->execute(array_map(function($f) use ($data) {
+        return $data[$f];
+    }, $keyFields));
 
     $columns = array_keys($data);
     $values = array_values($data);
