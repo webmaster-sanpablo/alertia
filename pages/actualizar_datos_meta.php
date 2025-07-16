@@ -33,26 +33,28 @@ function apiGet($url) {
 }
 
 function upsertUnique($pdo, $table, $keyFields, $data) {
-    $columns = array_keys($data);
-    $values = array_values($data);
-
-    $quotedCols = array_map(function($c) { return "`$c`"; }, $columns);
-    $quotedKeys = array_map(function($k) { return "`$k` = ?"; }, $keyFields);
-    $where = implode(' AND ', $quotedKeys);
-
+    // Verificar si ya existe el registro por clave única
+    $where = implode(' AND ', array_map(fn($f) => "`$f` = ?", $keyFields));
     $check = $pdo->prepare("SELECT 1 FROM `$table` WHERE $where");
-    $check->execute(array_map(function($f) use ($data) { return $data[$f]; }, $keyFields));
+    $check->execute(array_map(fn($f) => $data[$f], $keyFields));
+
+    // Separar columnas para el SET (sin repetir claves)
+    $columns = array_keys($data);
+    $setColumns = array_diff($columns, $keyFields);
+    $set = implode(', ', array_map(fn($c) => "`$c` = ?", $setColumns));
+
+    $valuesSet = array_map(fn($c) => $data[$c], $setColumns);
+    $valuesWhere = array_map(fn($k) => $data[$k], $keyFields);
 
     if ($check->fetch()) {
-        $set = implode(', ', array_map(function($c) { return "`$c` = ?"; }, $columns));
         $update = $pdo->prepare("UPDATE `$table` SET $set WHERE $where");
-        $update->execute(array_merge($values, array_map(function($f) use ($data) { return $data[$f]; }, $keyFields)));
+        $update->execute(array_merge($valuesSet, $valuesWhere));
         logMsg("🔄 Actualizado $table");
     } else {
-        $cols = implode(', ', $quotedCols);
+        $cols = implode(', ', array_map(fn($c) => "`$c`", $columns));
         $marks = implode(', ', array_fill(0, count($columns), '?'));
         $insert = $pdo->prepare("INSERT INTO `$table` ($cols) VALUES ($marks)");
-        $insert->execute($values);
+        $insert->execute(array_values($data));
         logMsg("✅ Insertado en $table");
     }
 }
