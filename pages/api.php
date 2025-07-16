@@ -21,7 +21,7 @@ $options = [
 ];
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
+    $db = new PDO($dsn, $user, $pass, $options);
     // echo 'Conectado con éxito a MySQL';
 } catch (PDOException $e) {
     die('❌ Error de conexión con MySQL: ' . $e->getMessage());
