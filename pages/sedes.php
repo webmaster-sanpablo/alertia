@@ -68,7 +68,7 @@
                 <ul class="navbar-nav">
                     <?php if (isset($_SESSION['nivel_usuario']) && $_SESSION['nivel_usuario'] == 3): ?>
                     <li class="nav-item">
-                        <a class="nav-link active bg-gradient-dark text-white" href="../pages/dashboard.php">
+                        <a class="nav-link text-dark" href="../pages/dashboard.php">
                             <i class="material-symbols-rounded opacity-5">dashboard</i>
                             <span class="nav-link-text ms-1">Dashboard</span>
                         </a>
@@ -76,7 +76,7 @@
                     <?php endif; ?>
                     <?php if (isset($_SESSION['nivel_usuario']) && ($_SESSION['nivel_usuario'] == 2 || $_SESSION['nivel_usuario'] == 1)): ?>
                     <li class="nav-item">
-                        <a class="nav-link active bg-gradient-dark text-white" href="../pages/dashboard-sede.php">
+                        <a class="nav-link text-dark" href="../pages/dashboard-sede.php">
                             <i class="material-symbols-rounded opacity-5">dashboard</i>
                             <span class="nav-link-text ms-1">Dashboard</span>
                         </a>
