@@ -329,7 +329,7 @@
             <div class="collapse navbar-collapse w-auto " id="sidenav-collapse-main">
                 <ul class="navbar-nav">
                     
-                    <?php if (isset($_SESSION['nivel_usuario']) && $_SESSION['nivel_usuario'] == 3): ?>
+                    <?php if (isset($_SESSION['nivel_usuario']) && ($_SESSION['nivel_usuario'] == 3 || $_SESSION['nivel_usuario'] == 2)): ?>
                     <li class="nav-item">
                         <a class="nav-link active bg-gradient-dark text-white" href="../pages/dashboard.php">
                             <i class="material-symbols-rounded opacity-5">dashboard</i>
@@ -337,7 +337,7 @@
                         </a>
                     </li>
                     <?php endif; ?>
-                    <?php if (isset($_SESSION['nivel_usuario']) && ($_SESSION['nivel_usuario'] == 2 || $_SESSION['nivel_usuario'] == 1)): ?>
+                    <?php if (isset($_SESSION['nivel_usuario']) && $_SESSION['nivel_usuario'] == 1): ?>
                     <li class="nav-item">
                         <a class="nav-link active bg-gradient-dark text-white" href="../pages/dashboard-sede.php?id_cuenta=<?= $id_cuenta ?>">
                             <i class="material-symbols-rounded opacity-5">dashboard</i>
