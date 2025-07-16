@@ -1065,9 +1065,9 @@
                     }
                 });
             }
-            echo("adsFull : " . adsFull);
-            echo("adsetsFull : " . adsetsFull);
-            echo("campaignsFull : " . campaignsFull);
+            console.log("adsFull : " . adsFull);
+            console.log("adsetsFull : " . adsetsFull);
+            console.log("campaignsFull : " . campaignsFull);
 
             renderMultiMetricChart('adsChartFull', adsFull);
             renderMultiMetricChart('adsetsChartFull', adsetsFull);
