@@ -3,12 +3,12 @@ header('Content-Type: application/json');
 $endpoint = $_GET['endpoint'] ?? '';
 $id_cuenta = isset($_GET['id_cuenta']) ? (int)$_GET['id_cuenta'] : null;
 $host = '192.1.0.239';
-$db   = 'alertia';
+$bbdd   = 'alertia';
 $user = 'alertia';
 $pass = 'Casita123';
 $charset = 'utf8mb4';
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;dbname=$bbdd;charset=$charset";
 
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Lanza excepciones en errores
@@ -17,7 +17,7 @@ $options = [
 ];
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
+    $db = new PDO($dsn, $user, $pass, $options);
     // echo 'Conectado con éxito a MySQL';
 } catch (PDOException $e) {
     die('❌ Error de conexión con MySQL: ' . $e->getMessage());
