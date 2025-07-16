@@ -48,7 +48,7 @@ function insertOrUpdate($pdo, $table, $columns, $values, $dateField, $id_cuenta)
             }
         }
         if ($changed) {
-            $set = implode(', ', array_map(fn($c) => "$c = ?", $columns)) . ", updated_at = NOW()";
+            $set = implode(', ', array_map(function($c) { return "$c = ?"; }, $columns)) . ", updated_at = NOW()";
             $sql = "UPDATE $table SET $set WHERE DATE($dateField) = ? AND id_cuenta = ?";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([...$values, $date, $id_cuenta]);
