@@ -182,10 +182,10 @@
                             </li>
                             <?php if (isset($_SESSION['nivel_usuario']) && $_SESSION['nivel_usuario'] == 3): ?>
                             <li class="nav-item px-3 d-flex align-items-center">
+                                <div id="log"></div>
                                 <button id="sync-button" class="d-flex align-items-center nav-link text-body p-0">
                                     <i class="material-symbols-rounded fixed-plugin-button-nav">autorenew</i>
                                 </button>
-                                <div id="log"></div>
                             </li>
                             <?php endif; ?>
                             <li class="nav-item dropdown pe-3 d-flex align-items-center">
@@ -1131,7 +1131,7 @@
                         if (data.error) {
                             logDiv.innerHTML = `<span style="color:red">🚫 ${data.error}</span>`;
                         } else if (Array.isArray(data.resultados)) {
-                            // logDiv.innerHTML = '<b>✅ Resultado:</b><br>' + data.resultados.map(line => `• ${line}`).join('<br>');
+                            logDiv.innerHTML = '';
                         } else {
                             logDiv.innerHTML = `<span style="color:red">⚠️ Respuesta inesperada del servidor</span>`;
                             console.error('Respuesta inesperada:', data);
