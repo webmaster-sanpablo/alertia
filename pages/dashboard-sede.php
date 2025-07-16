@@ -315,11 +315,6 @@
                 border-radius: 12px;
             }
         </style>
-        <script>
-            const adsFull = <?php echo json_encode($adsFull); ?>;
-            const adsetsFull = <?php echo json_encode($adsetsFull); ?>;
-            const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
-        </script>
     </head>
     <body class="g-sidenav-show bg-gray-100">
         <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2" id="sidenav-main">
