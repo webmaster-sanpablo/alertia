@@ -238,9 +238,9 @@
     $adsFull = getMetrics($pdo, 'ads_insights_fb', 'ad_name', $id_cuenta);
     $adsetsFull = getMetrics($pdo, 'adsets_insights_fb', 'adset_name', $id_cuenta);
     $campaignsFull = getMetrics($pdo, 'campaigns_insights_fb', 'campaign_name', $id_cuenta);
-    echo("adsFull : " . $adsFull);
-    echo("adsetsFull : " . $adsetsFull);
-    echo("campaignsFull : " . $campaignsFull);
+    echo("$ adsFull : " . $adsFull);
+    echo("$ adsetsFull : " . $adsetsFull);
+    echo("$ campaignsFull : " . $campaignsFull);
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -1065,6 +1065,9 @@
                     }
                 });
             }
+            echo("adsFull : " . adsFull);
+            echo("adsetsFull : " . adsetsFull);
+            echo("campaignsFull : " . campaignsFull);
 
             renderMultiMetricChart('adsChartFull', adsFull);
             renderMultiMetricChart('adsetsChartFull', adsetsFull);
