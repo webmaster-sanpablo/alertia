@@ -51,7 +51,7 @@ function insertOrUpdate($pdo, $table, $columns, $values, $dateField, $id_cuenta)
             $set = implode(', ', array_map(function($c) { return "$c = ?"; }, $columns)) . ", updated_at = NOW()";
             $sql = "UPDATE $table SET $set WHERE DATE($dateField) = ? AND id_cuenta = ?";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([...$values, $date, $id_cuenta]);
+            $stmt->execute(array_merge($values, [$date, $id_cuenta]));
             logMsg("🔄 Actualizado $table");
         } else {
             logMsg("ℹ️ Sin cambios en $table");
@@ -61,7 +61,7 @@ function insertOrUpdate($pdo, $table, $columns, $values, $dateField, $id_cuenta)
         $marks = rtrim(str_repeat('?, ', count($columns)), ', ') . ', NOW(), NOW(), ?';
         $sql = "INSERT INTO $table ($cols) VALUES ($marks)";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([...$values, $id_cuenta]);
+        $stmt->execute(array_merge($values, [$id_cuenta]));
         logMsg("✅ Insertado en $table");
     }
 }
