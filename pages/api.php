@@ -627,13 +627,21 @@ switch ($endpoint) {
     case 'meta/ranking-cuentas': 
         $indicador = $_GET['indicador'] ?? 'costo';
 
-        $indicadorCampo = match ($indicador) {
-            'alcance' => 'alcance',
-            'seguidores' => 'seguidores',
-            'interacciones' => 'interacciones',
-            'costo' => 'costo',
-            default => 'costo'
-        };
+        switch ($indicador) {
+            case 'alcance':
+                $indicadorCampo = 'alcance';
+                break;
+            case 'seguidores':
+                $indicadorCampo = 'seguidores';
+                break;
+            case 'interacciones':
+                $indicadorCampo = 'interacciones';
+                break;
+            case 'costo':
+            default:
+                $indicadorCampo = 'costo';
+                break;
+        }
 
         $sql = "
             SELECT 
