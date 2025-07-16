@@ -1117,20 +1117,34 @@
             });
 
             document.getElementById('sync-button').addEventListener('click', () => {
+                const button = document.getElementById('sync-button');
                 const logDiv = document.getElementById('log');
+
+                // Mostrar ícono de carga
+                button.disabled = true;
+                const originalText = button.innerHTML;
+                button.innerHTML = '⏳ Sincronizando...';
                 logDiv.innerHTML = '⌛ Ejecutando...';
 
                 fetch('actualizar_datos_meta.php?token=mi_token_secreto123')
                     .then(res => res.json())
                     .then(data => {
                         if (data.error) {
-                            logDiv.innerHTML = `<span style="color:red">${data.error}</span>`;
+                            logDiv.innerHTML = `<span style="color:red">🚫 ${data.error}</span>`;
+                        } else if (Array.isArray(data.resultados)) {
+                            logDiv.innerHTML = '<b>✅ Resultado:</b><br>' + data.resultados.map(line => `• ${line}`).join('<br>');
                         } else {
-                            logDiv.innerHTML = '<b>✅ Resultado:</b><br>' + data.log.map(line => `• ${line}`).join('<br>');
+                            logDiv.innerHTML = `<span style="color:red">⚠️ Respuesta inesperada del servidor</span>`;
+                            console.error('Respuesta inesperada:', data);
                         }
                     })
                     .catch(err => {
                         logDiv.innerHTML = `<span style="color:red">❌ Error: ${err.message}</span>`;
+                        console.error('Error al ejecutar:', err);
+                    })
+                    .finally(() => {
+                        button.disabled = false;
+                        button.innerHTML = originalText;
                     });
             });
         </script>
