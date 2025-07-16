@@ -1023,6 +1023,11 @@
             const campaignsFull = <?php echo json_encode($campaignsFull); ?>;
 
             function renderMultiMetricChart(canvasId, data) {
+                if (!Array.isArray(data) || data.length === 0) {
+                    console.warn(`No hay datos para el gráfico: ${canvasId}`);
+                    return;
+                }
+
                 const labels = data.map(d => d.label);
                 const metrics = ['clicks', 'impressions', 'reach', 'spend', 'ctr', 'cpc', 'cpm', 'cost_per_result'];
 
@@ -1030,43 +1035,50 @@
                     const r = (index + 1) * 40 % 255;
                     const g = (index + 2) * 60 % 255;
                     const b = (index + 3) * 80 % 255;
+
                     return {
-                    label: metric.toUpperCase(),
-                    data: data.map(d => parseFloat(d[metric]) || 0),
-                    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,  // relleno transparente
-                    borderColor: `rgba(${r}, ${g}, ${b}, 1)`,        // borde sólido
-                    borderWidth: 1,
-                    barThickness: 12                                // ← fuerza separación y grosor
+                        label: metric.toUpperCase(),
+                        data: data.map(d => parseFloat(d[metric]) || 0),
+                        backgroundColor: `rgba(${r}, ${g}, ${b}, 0.3)`,
+                        borderColor: `rgba(${r}, ${g}, ${b}, 1)`,
+                        borderWidth: 1,
+                        barThickness: 12
                     };
                 });
 
-                new Chart(document.getElementById(canvasId).getContext('2d'), {
+                const ctx = document.getElementById(canvasId)?.getContext('2d');
+                if (!ctx) {
+                    console.error(`Canvas no encontrado: ${canvasId}`);
+                    return;
+                }
+
+                new Chart(ctx, {
                     type: 'bar',
                     data: {
-                    labels: labels,
-                    datasets: datasets
+                        labels: labels,
+                        datasets: datasets
                     },
                     options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top' },
-                        title: { display: false }
-                    },
-                    scales: {
-                        x: {
-                        stacked: false,
-                        ticks: {
-                            autoSkip: false,
-                            maxRotation: 45,
-                            minRotation: 45
-                        }
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: false }
                         },
-                        y: {
-                        beginAtZero: true,
-                        stacked: false
+                        scales: {
+                            x: {
+                                stacked: false,
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 45,
+                                    minRotation: 45
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                stacked: false
+                            }
                         }
-                    }
                     }
                 });
             }
