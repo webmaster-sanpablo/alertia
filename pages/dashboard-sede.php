@@ -227,7 +227,7 @@
         $stmt = $pdo->prepare("
             SELECT $nameField AS label, clicks, impressions, reach, spend, ctr, cpc, cpm, cost_per_result
             FROM $table
-            WHERE id_cuenta = ?
+            WHERE id_cuenta = $id_cuenta
             ORDER BY created_at DESC
             LIMIT 5
         ");
@@ -238,14 +238,6 @@
     $adsFull = getMetrics($pdo, 'ads_insights_fb', 'ad_name', $id_cuenta);
     $adsetsFull = getMetrics($pdo, 'adsets_insights_fb', 'adset_name', $id_cuenta);
     $campaignsFull = getMetrics($pdo, 'campaigns_insights_fb', 'campaign_name', $id_cuenta);
-    
-    header('Content-Type: application/json');
-    echo json_encode([
-        'ads' => $adsFull,
-        'adsets' => $adsetsFull,
-        'campaigns' => $campaignsFull
-    ]);
-    exit;
 ?>
 <!DOCTYPE html>
 <html lang="es">
