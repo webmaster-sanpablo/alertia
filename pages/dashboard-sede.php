@@ -227,14 +227,7 @@
         $stmt = $pdo->prepare("
             SELECT $nameField AS label, clicks, impressions, reach, spend, ctr, cpc, cpm, cost_per_result
             FROM $table
-            WHERE id_cuenta = ?
-            ORDER BY created_at DESC
-            LIMIT 5
-        ");
-        echo("consulta : " . "
-            SELECT $nameField AS label, clicks, impressions, reach, spend, ctr, cpc, cpm, cost_per_result
-            FROM $table
-            WHERE id_cuenta = ?
+            WHERE id_cuenta = $id_cuenta
             ORDER BY created_at DESC
             LIMIT 5
         ");
