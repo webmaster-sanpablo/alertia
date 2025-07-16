@@ -180,6 +180,13 @@
                             <li class="nav-item d-flex align-items-center">
                                 <a class="btn btn-outline-dark btn-sm mb-0 me-3 border-0" target="_blank" href="#">Red de clínicas</a>
                             </li>
+                            <?php if (isset($_SESSION['nivel_usuario']) && $_SESSION['nivel_usuario'] == 3): ?>
+                            <li class="nav-item px-3 d-flex align-items-center">
+                                <button id="sync-button" class="d-flex align-items-center nav-link text-body p-0">
+                                    <i class="material-symbols-rounded fixed-plugin-button-nav">autorenew</i>
+                                </button>
+                            </li>
+                            <?php endif; ?>
                             <li class="nav-item dropdown pe-3 d-flex align-items-center">
                                 <a href="javascript:;" class="nav-link text-body p-0" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="material-symbols-rounded">notifications</i>
