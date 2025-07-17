@@ -359,7 +359,7 @@ foreach ($cuentas as $cuenta) {
                     upsertUnique($pdo, 'post_fb', [
                         'id' => $postId,
                         'message' => $mensaje,
-                        'created_time' => $creado,
+                        'created_at' => $creado,
                         'like' => $detPost['like']['summary']['total_count'] ?? 0,
                         'love' => $detPost['love']['summary']['total_count'] ?? 0,
                         'wow' => $detPost['wow']['summary']['total_count'] ?? 0,
