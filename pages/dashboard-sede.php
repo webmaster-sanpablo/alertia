@@ -957,36 +957,38 @@
                 }
                 
                 // 🚀 Cargar resumen (reach, followers, engagements, views)
-                fetch("api.php?endpoint=meta/summary")
-                    .then(response => response.json())
-                    .then(data => {
-                        actualizarIndicador('meta-total-reach', 'meta-reach-change', {
-                            total: data.totalReach,
-                            change: `${data.reachChange > 0 ? '+' : ''}${data.reachChange}%`,
-                            trend: data.reachChange >= 0 ? 'up' : 'down'
-                        });
+                setInterval(() => {
+                    fetch("api.php?endpoint=meta/summary")
+                        .then(response => response.json())
+                        .then(data => {
+                            actualizarIndicador('meta-total-reach', 'meta-reach-change', {
+                                total: data.totalReach,
+                                change: `${data.reachChange > 0 ? '+' : ''}${data.reachChange}%`,
+                                trend: data.reachChange >= 0 ? 'up' : 'down'
+                            });
 
-                        actualizarIndicador('meta-total-followers', 'meta-followers-change', {
-                            total: data.totalFollowers,
-                            change: `+${data.newFollowers}`,
-                            trend: data.newFollowers >= 0 ? 'up' : 'down'
-                        });
+                            actualizarIndicador('meta-total-followers', 'meta-followers-change', {
+                                total: data.totalFollowers,
+                                change: `+${data.newFollowers}`,
+                                trend: data.newFollowers >= 0 ? 'up' : 'down'
+                            });
 
-                        actualizarIndicador('meta-total-engagements', 'meta-engagements-change', {
-                            total: data.totalEngagements,
-                            change: `${data.engagementsChange > 0 ? '+' : ''}${data.engagementsChange}%`,
-                            trend: data.engagementsChange >= 0 ? 'up' : 'down'
-                        });
+                            actualizarIndicador('meta-total-engagements', 'meta-engagements-change', {
+                                total: data.totalEngagements,
+                                change: `${data.engagementsChange > 0 ? '+' : ''}${data.engagementsChange}%`,
+                                trend: data.engagementsChange >= 0 ? 'up' : 'down'
+                            });
 
-                        actualizarIndicador('meta-total-views', 'meta-views-change', {
-                            total: data.totalViews,
-                            change: `${data.viewsChange > 0 ? '+' : ''}${data.viewsChange}%`,
-                            trend: data.viewsChange >= 0 ? 'up' : 'down'
+                            actualizarIndicador('meta-total-views', 'meta-views-change', {
+                                total: data.totalViews,
+                                change: `${data.viewsChange > 0 ? '+' : ''}${data.viewsChange}%`,
+                                trend: data.viewsChange >= 0 ? 'up' : 'down'
+                            });
+                        })
+                        .catch(error => {
+                            console.error("Error al cargar datos del dashboard:", error);
                         });
-                    })
-                    .catch(error => {
-                        console.error("Error al cargar datos del dashboard:", error);
-                    });
+                }, 30000);
             });
 
             const syncButton = document.getElementById('sync-button');
