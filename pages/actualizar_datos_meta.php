@@ -150,7 +150,6 @@ foreach ($cuentas as $cuenta) {
         
         if (isset($resp['followers_count'])) {
             upsertUnique($pdo, 'seguidores_fb', [
-                'id_seguidores_fb' => date('Y-m-d'),
                 'followers_count' => $resp['followers_count'],
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
@@ -232,7 +231,6 @@ foreach ($cuentas as $cuenta) {
                 
                 if (!isset($igData['error']) && isset($igData['followers_count'])) {
                     upsertUnique($pdo, 'seguidores_ig', [
-                        'id_seguidores_ig' => date('Y-m-d'),
                         'followers_count' => $igData['followers_count'],
                         'media_count' => $igData['media_count'] ?? 0,
                         'created_at' => date('Y-m-d H:i:s'),
@@ -274,6 +272,107 @@ foreach ($cuentas as $cuenta) {
                     }
                     
                     upsertUnique($pdo, 'insights_ig', $datosIG, ['id_cuenta'], $log);
+                }
+            }
+        }
+
+        // === 4. Obtener insights de campañas, adsets y ads (si tiene ads_account_id) ===
+        if (!empty($cuenta['ads_account_id'])) {
+            $adsAccountId = $cuenta['ads_account_id'];
+            $fechaHoy = date('Y-m-d');
+
+            $urlInsights = "https://graph.facebook.com/v19.0/act_{$adsAccountId}/insights?fields=campaign_id,campaign_name,adset_id,adset_name,ad_id,ad_name,impressions,reach,clicks,spend,cpc,cpm,ctr,cost_per_result,date_start,date_end&level=ad&time_increment=1&date_preset=today&access_token=$token";
+
+            $responseInsights = @file_get_contents($urlInsights);
+            if ($responseInsights !== false) {
+                $json = json_decode($responseInsights, true);
+                if (isset($json['data']) && is_array($json['data'])) {
+                    foreach ($json['data'] as $fila) {
+                        $common = [
+                            'impressions' => $fila['impressions'] ?? 0,
+                            'reach' => $fila['reach'] ?? 0,
+                            'clicks' => $fila['clicks'] ?? 0,
+                            'spend' => $fila['spend'] ?? 0,
+                            'cpc' => $fila['cpc'] ?? 0,
+                            'cpm' => $fila['cpm'] ?? 0,
+                            'ctr' => $fila['ctr'] ?? 0,
+                            'cost_per_result' => $fila['cost_per_result'] ?? 0,
+                            'date_start' => $fila['date_start'] ?? $fechaHoy,
+                            'date_end' => $fila['date_end'] ?? $fechaHoy,
+                            'created_at' => date('Y-m-d H:i:s'),
+                            'updated_at' => date('Y-m-d H:i:s'),
+                            'id_cuenta' => $idCuenta
+                        ];
+
+                        // Campañas
+                        if (!empty($fila['campaign_id'])) {
+                            upsertUnique($pdo, 'campaigns_insights_fb', array_merge($common, [
+                                'campaign_id' => $fila['campaign_id'],
+                                'campaign_name' => $fila['campaign_name'] ?? ''
+                            ]), ['campaign_id', 'date_start', 'id_cuenta'], $log);
+                        }
+
+                        // Adsets
+                        if (!empty($fila['adset_id'])) {
+                            upsertUnique($pdo, 'adsets_insights_fb', array_merge($common, [
+                                'adset_id' => $fila['adset_id'],
+                                'adset_name' => $fila['adset_name'] ?? ''
+                            ]), ['adset_id', 'date_start', 'id_cuenta'], $log);
+                        }
+
+                        // Ads
+                        if (!empty($fila['ad_id'])) {
+                            upsertUnique($pdo, 'ads_insights_fb', array_merge($common, [
+                                'ad_id' => $fila['ad_id'],
+                                'ad_name' => $fila['ad_name'] ?? ''
+                            ]), ['ad_id', 'date_start', 'id_cuenta'], $log);
+                        }
+                    }
+                }
+            }
+        }
+        
+        // === 5. Obtener publicaciones recientes de Facebook ===
+        $urlPosts = "https://graph.facebook.com/v19.0/{$pageId}/posts?fields=id,message,created_time&limit=10&access_token=$token";
+        $responsePosts = @file_get_contents($urlPosts);
+        if ($responsePosts !== false) {
+            $posts = json_decode($responsePosts, true);
+            if (isset($posts['data'])) {
+                foreach ($posts['data'] as $post) {
+                    $postId = $post['id'];
+                    $mensaje = $post['message'] ?? '';
+                    $creado = $post['created_time'] ?? date('Y-m-d H:i:s');
+
+                    // === 5.1 Obtener reacciones y estadísticas por publicación ===
+                    $fields = "reactions.type(LIKE).summary(total_count).limit(0).as(like),
+                            reactions.type(LOVE).summary(total_count).limit(0).as(love),
+                            reactions.type(WOW).summary(total_count).limit(0).as(wow),
+                            reactions.type(HAHA).summary(total_count).limit(0).as(haha),
+                            reactions.type(ANGRY).summary(total_count).limit(0).as(anger),
+                            reactions.type(SAD).summary(total_count).limit(0).as(sorry),
+                            comments.summary(true),
+                            shares";
+
+                    $urlDetallePost = "https://graph.facebook.com/v19.0/{$postId}?fields=$fields&access_token=$token";
+                    $detalle = @file_get_contents($urlDetallePost);
+                    $detPost = $detalle ? json_decode($detalle, true) : [];
+
+                    upsertUnique($pdo, 'post_fb', [
+                        'id' => $postId,
+                        'message' => $mensaje,
+                        'created_time' => $creado,
+                        'like' => $detPost['like']['summary']['total_count'] ?? 0,
+                        'love' => $detPost['love']['summary']['total_count'] ?? 0,
+                        'wow' => $detPost['wow']['summary']['total_count'] ?? 0,
+                        'haha' => $detPost['haha']['summary']['total_count'] ?? 0,
+                        'anger' => $detPost['anger']['summary']['total_count'] ?? 0,
+                        'sorry' => $detPost['sorry']['summary']['total_count'] ?? 0,
+                        'comments' => $detPost['comments']['summary']['total_count'] ?? 0,
+                        'shares' => $detPost['shares']['count'] ?? 0,
+                        'created_at' => date('Y-m-d H:i:s'),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                        'id_cuenta' => $idCuenta
+                    ], ['id'], $log);
                 }
             }
         }
