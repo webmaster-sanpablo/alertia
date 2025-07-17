@@ -51,39 +51,56 @@ try {
 }
 
 // === Función para insertar o actualizar datos únicos ===
-function upsertUnique($pdo, $tabla, $datos, $clavesUnicas, $log) {
-    $condiciones = [];
+function upsertUnique($pdo, $tabla, $data, $clavesUnicas, $log = null) {
+    // Validación de claves únicas
+    foreach ($clavesUnicas as $clave) {
+        if (!isset($data[$clave])) {
+            $msg = "⚠️ Falta clave '$clave' en datos para tabla $tabla";
+            if (is_callable($log)) $log($msg); else echo $msg . "\n";
+            return;
+        }
+    }
+
+    // WHERE para verificar existencia
+    $where = [];
     $params = [];
     foreach ($clavesUnicas as $clave) {
-        $condiciones[] = "`$clave` = :$clave";
-        $params[":$clave"] = $datos[$clave];
+        $where[] = "`$clave` = :$clave";
+        $params[":$clave"] = $data[$clave];
     }
 
-    $sqlCheck = "SELECT COUNT(*) FROM `$tabla` WHERE " . implode(' AND ', $condiciones);
-    $stmtCheck = $pdo->prepare($sqlCheck);
-    $stmtCheck->execute($params);
-    $existe = $stmtCheck->fetchColumn();
+    $sql_check = "SELECT COUNT(*) FROM `$tabla` WHERE " . implode(" AND ", $where);
+    $stmt_check = $pdo->prepare($sql_check);
+    $stmt_check->execute($params);
+    $existe = $stmt_check->fetchColumn() > 0;
+
+    $campos = array_keys($data);
+    $placeholders = array_map(fn($c) => ":$c", $campos);
 
     if ($existe) {
-        $log("ℹ️ Datos ya existen en $tabla, omitiendo inserción");
-        return;
+        // UPDATE
+        $sets = [];
+        foreach ($campos as $campo) {
+            if (!in_array($campo, $clavesUnicas)) {
+                $sets[] = "`$campo` = :$campo";
+            }
+        }
+
+        if (empty($sets)) return;
+
+        $sql_update = "UPDATE `$tabla` SET " . implode(", ", $sets) . " WHERE " . implode(" AND ", $where);
+        $stmt = $pdo->prepare($sql_update);
+        $stmt->execute($data);
+        $msg = "🔁 Actualizado en $tabla [" . implode(', ', array_map(fn($k) => "$k={$data[$k]}", $clavesUnicas)) . "]";
+    } else {
+        // INSERT
+        $sql_insert = "INSERT INTO `$tabla` (`" . implode("`, `", $campos) . "`) VALUES (" . implode(", ", $placeholders) . ")";
+        $stmt = $pdo->prepare($sql_insert);
+        $stmt->execute($data);
+        $msg = "✅ Insertado en $tabla [" . implode(', ', array_map(fn($k) => "$k={$data[$k]}", $clavesUnicas)) . "]";
     }
 
-    $columnas = array_map(function($col) { return "`$col`"; }, array_keys($datos));
-    $placeholders = array_map(function($col) { return ":$col"; }, array_keys($datos));
-    $sqlInsert = "INSERT INTO `$tabla` (" . implode(',', $columnas) . ") VALUES (" . implode(',', $placeholders) . ")";
-
-    $stmtInsert = $pdo->prepare($sqlInsert);
-    foreach ($datos as $col => $val) {
-        $stmtInsert->bindValue(":$col", $val);
-    }
-
-    try {
-        $stmtInsert->execute();
-        $log("✓ Datos insertados en $tabla");
-    } catch (Exception $e) {
-        $log("❌ Error al insertar en $tabla: " . $e->getMessage());
-    }
+    if (is_callable($log)) $log($msg); else echo $msg . "\n";
 }
 
 // === Procesar cada cuenta ===
@@ -127,7 +144,7 @@ foreach ($cuentas as $cuenta) {
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
                 'id_cuenta' => $idCuenta
-            ], ['id_seguidores_fb', 'id_cuenta'], $log);
+            ], ['id_cuenta'], $log);
         }
 
         // === 2. Obtener insights de Facebook ===
@@ -192,7 +209,7 @@ foreach ($cuentas as $cuenta) {
             }
         }
 
-        upsertUnique($pdo, 'insights_fb', $datosInsights, ['id_insights_fb', 'id_cuenta'], $log);
+        upsertUnique($pdo, 'insights_fb', $datosInsights, ['id_cuenta'], $log);
 
         // === 3. Obtener datos de Instagram (si tiene ig_user_id) ===
         if (!empty($igUserId)) {
@@ -210,7 +227,7 @@ foreach ($cuentas as $cuenta) {
                         'created_at' => date('Y-m-d H:i:s'),
                         'updated_at' => date('Y-m-d H:i:s'),
                         'id_cuenta' => $idCuenta
-                    ], ['id_seguidores_ig', 'id_cuenta'], $log);
+                    ], ['id_cuenta'], $log);
                 }
             }
 
@@ -245,7 +262,7 @@ foreach ($cuentas as $cuenta) {
                         }
                     }
                     
-                    upsertUnique($pdo, 'insights_ig', $datosIG, ['id_insights_ig', 'id_cuenta'], $log);
+                    upsertUnique($pdo, 'insights_ig', $datosIG, ['id_cuenta'], $log);
                 }
             }
         }
