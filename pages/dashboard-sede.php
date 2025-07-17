@@ -957,7 +957,7 @@
                 }
                 
                 // 🚀 Cargar resumen (reach, followers, engagements, views)
-                setInterval(() => {
+                /*setInterval(() => {
                     fetch("api.php?endpoint=meta/summary")
                         .then(response => response.json())
                         .then(data => {
@@ -988,7 +988,7 @@
                         .catch(error => {
                             console.error("Error al cargar datos del dashboard:", error);
                         });
-                }, 30000);
+                }, 30000);*/
             });
 
             const syncButton = document.getElementById('sync-button');
