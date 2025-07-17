@@ -177,7 +177,6 @@ foreach ($cuentas as $cuenta) {
         
         // Preparar datos según estructura de tu tabla insights_fb
         $datosInsights = [
-            'id_insights_fb' => date('Y-m-d'),
             'page_impressions' => 0,
             'page_fans' => 0,
             'page_post_engagements' => 0,
