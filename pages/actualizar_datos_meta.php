@@ -56,14 +56,14 @@ function upsertUnique($pdo, $tabla, $data, $clavesUnicas, $log = null) {
     foreach ($clavesUnicas as $clave) {
         if (!isset($data[$clave])) {
             $msg = "⚠️ Falta clave '$clave' en datos para tabla $tabla";
-            if (is_callable($log)) $log($msg); else echo $msg . "\n";
+            if (is_callable($log)) call_user_func($log, $msg); else echo $msg . "\n";
             return;
         }
     }
 
     // WHERE para verificar existencia
-    $where = [];
-    $params = [];
+    $where = array();
+    $params = array();
     foreach ($clavesUnicas as $clave) {
         $where[] = "`$clave` = :$clave";
         $params[":$clave"] = $data[$clave];
@@ -75,11 +75,14 @@ function upsertUnique($pdo, $tabla, $data, $clavesUnicas, $log = null) {
     $existe = $stmt_check->fetchColumn() > 0;
 
     $campos = array_keys($data);
-    $placeholders = array_map(fn($c) => ":$c", $campos);
+    $placeholders = array();
+    foreach ($campos as $c) {
+        $placeholders[] = ":$c";
+    }
 
     if ($existe) {
         // UPDATE
-        $sets = [];
+        $sets = array();
         foreach ($campos as $campo) {
             if (!in_array($campo, $clavesUnicas)) {
                 $sets[] = "`$campo` = :$campo";
@@ -91,16 +94,24 @@ function upsertUnique($pdo, $tabla, $data, $clavesUnicas, $log = null) {
         $sql_update = "UPDATE `$tabla` SET " . implode(", ", $sets) . " WHERE " . implode(" AND ", $where);
         $stmt = $pdo->prepare($sql_update);
         $stmt->execute($data);
-        $msg = "🔁 Actualizado en $tabla [" . implode(', ', array_map(fn($k) => "$k={$data[$k]}", $clavesUnicas)) . "]";
+        $clavesTexto = array();
+        foreach ($clavesUnicas as $k) {
+            $clavesTexto[] = "$k={$data[$k]}";
+        }
+        $msg = "🔁 Actualizado en $tabla [" . implode(', ', $clavesTexto) . "]";
     } else {
         // INSERT
         $sql_insert = "INSERT INTO `$tabla` (`" . implode("`, `", $campos) . "`) VALUES (" . implode(", ", $placeholders) . ")";
         $stmt = $pdo->prepare($sql_insert);
         $stmt->execute($data);
-        $msg = "✅ Insertado en $tabla [" . implode(', ', array_map(fn($k) => "$k={$data[$k]}", $clavesUnicas)) . "]";
+        $clavesTexto = array();
+        foreach ($clavesUnicas as $k) {
+            $clavesTexto[] = "$k={$data[$k]}";
+        }
+        $msg = "✅ Insertado en $tabla [" . implode(', ', $clavesTexto) . "]";
     }
 
-    if (is_callable($log)) $log($msg); else echo $msg . "\n";
+    if (is_callable($log)) call_user_func($log, $msg); else echo $msg . "\n";
 }
 
 // === Procesar cada cuenta ===
