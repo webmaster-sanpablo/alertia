@@ -163,7 +163,6 @@ switch ($endpoint) {
         echo json_encode($response);
         break;
 
-
     case 'meta/platform-reach-history':
         $dias = dias_esp();
         $labels = [];
@@ -402,7 +401,6 @@ switch ($endpoint) {
             echo json_encode(['status' => 'error', 'error' => $e->getMessage()]);
         }
         break;
-
 
     case 'usuarios/editar':
         $data = json_decode(file_get_contents("php://input"), true);

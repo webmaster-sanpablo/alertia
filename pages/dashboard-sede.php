@@ -709,37 +709,6 @@
         <script src="../assets/js/material-dashboard.min.js?v=3.2.0"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-                // 🚀 Cargar resumen (reach, followers, engagements, views)
-                fetch("api.php?endpoint=meta/summary")
-                    .then(response => response.json())
-                    .then(data => {
-                        actualizarIndicador('meta-total-reach', 'meta-reach-change', {
-                            total: data.totalReach,
-                            change: `${data.reachChange > 0 ? '+' : ''}${data.reachChange}%`,
-                            trend: data.reachChange >= 0 ? 'up' : 'down'
-                        });
-
-                        actualizarIndicador('meta-total-followers', 'meta-followers-change', {
-                            total: data.totalFollowers,
-                            change: `+${data.newFollowers}`,
-                            trend: data.newFollowers >= 0 ? 'up' : 'down'
-                        });
-
-                        actualizarIndicador('meta-total-engagements', 'meta-engagements-change', {
-                            total: data.totalEngagements,
-                            change: `${data.engagementsChange > 0 ? '+' : ''}${data.engagementsChange}%`,
-                            trend: data.engagementsChange >= 0 ? 'up' : 'down'
-                        });
-
-                        actualizarIndicador('meta-total-views', 'meta-views-change', {
-                            total: data.totalViews,
-                            change: `${data.viewsChange > 0 ? '+' : ''}${data.viewsChange}%`,
-                            trend: data.viewsChange >= 0 ? 'up' : 'down'
-                        });
-                    })
-                    .catch(error => {
-                        console.error("Error al cargar datos del dashboard:", error);
-                    });
 
                 // 📈 Cargar gráfico histórico de reach por plataforma
                 fetch('api.php?endpoint=meta/platform-reach-history')
@@ -986,6 +955,38 @@
                         changeEl.classList.add(datos.trend === 'up' ? 'text-success' : 'text-danger');
                     }
                 }
+                
+                // 🚀 Cargar resumen (reach, followers, engagements, views)
+                fetch("api.php?endpoint=meta/summary")
+                    .then(response => response.json())
+                    .then(data => {
+                        actualizarIndicador('meta-total-reach', 'meta-reach-change', {
+                            total: data.totalReach,
+                            change: `${data.reachChange > 0 ? '+' : ''}${data.reachChange}%`,
+                            trend: data.reachChange >= 0 ? 'up' : 'down'
+                        });
+
+                        actualizarIndicador('meta-total-followers', 'meta-followers-change', {
+                            total: data.totalFollowers,
+                            change: `+${data.newFollowers}`,
+                            trend: data.newFollowers >= 0 ? 'up' : 'down'
+                        });
+
+                        actualizarIndicador('meta-total-engagements', 'meta-engagements-change', {
+                            total: data.totalEngagements,
+                            change: `${data.engagementsChange > 0 ? '+' : ''}${data.engagementsChange}%`,
+                            trend: data.engagementsChange >= 0 ? 'up' : 'down'
+                        });
+
+                        actualizarIndicador('meta-total-views', 'meta-views-change', {
+                            total: data.totalViews,
+                            change: `${data.viewsChange > 0 ? '+' : ''}${data.viewsChange}%`,
+                            trend: data.viewsChange >= 0 ? 'up' : 'down'
+                        });
+                    })
+                    .catch(error => {
+                        console.error("Error al cargar datos del dashboard:", error);
+                    });
             });
 
             const syncButton = document.getElementById('sync-button');
